@@ -176,7 +176,29 @@ app.post('/books', (req, res) => {
 // ============== DELETE ==============
 // ====================================
 
+app.delete('/books/:id', (req, res) => {
 
+    if( ObjectId.isValid(req.params.id)){
+
+        db.collection('books')
+        .deleteOne({ _id: new ObjectId(req.params.id)})
+            .then(result => {
+                if(result !== null && result.deletedCount > 0){
+                    res.status(200).json(result)
+                }
+                else {
+                    res.status(500).json({ error: "There is no book with the ObjectId of: [ '" + req.params.id + "' ]"})
+                }
+            })
+            .catch(err => {
+                res.status(500).json({error: 'Could not delete the document'})
+            })
+    }
+    else{
+        res.status(500).json({ error: "ObjectId of id: [ '" + req.params.id + "' ], is not valid"})
+    }
+
+})
 
 
 
