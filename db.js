@@ -11,7 +11,7 @@ module.exports = {
         console.log("before MongoClient connect")
         
         // ASYNC Accepts connection string
-        // ?  Did NOT accept "localhost:27017" in connection string
+        // ? Why Didn't it accept "localhost:27017" in connection string ?
         MongoClient.connect("mongodb://127.0.0.1:27017/tutorial_bookstore") 
         .then((client) => {
             dbConnection = client.db()

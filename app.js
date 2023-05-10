@@ -3,8 +3,18 @@ const express = require('express');
 const { ObjectId } = require('mongodb');
 const { connectToDb, getDb } = require('./db')
 
+
+// ================================
+// ========== MIDDLEWARE ==========
+// ================================
+
 // init app and middleware
 const app = express()
+
+// Passes any JSON coming from the request so that we can use it in the handler function (POST request)
+app.use(express.json())
+
+
 
 let db
 
@@ -24,7 +34,19 @@ connectToDb((err) => {
 
 
 
-//routes
+// ====================================================================
+// ============================== ROUTES ==============================
+// ====================================================================
+
+
+// ===================================
+// =============== GET ===============
+// =================================== 
+
+app.get('/', (req, res) => {
+    res.json({ msg: "root route"})
+})
+
 
 //handles 'get' requests
 app.get('/books', (req, res) => {
@@ -46,10 +68,6 @@ app.get('/books', (req, res) => {
         .catch(() => {
             res.status(500).json({ error: "Could not fetch the documents "}) // Status: 500 == Server Error
         })
-})
-
-app.get('/', (req, res) => {
-    res.json({ msg: "root route"})
 })
 
 app.get('/books/:bookId', (req, res) => {
@@ -77,6 +95,147 @@ app.get('/books/:bookId', (req, res) => {
         res.status(500).json({ error: "ObjectId of bookId: [ '" + req.params.bookId + "' ], is not valid"})
     }
 })
+
+
+// ====================================
+// =============== POST ===============
+// ====================================
+
+app.post('/books', (req, res) => {
+
+    // Requires middleware to retrieve any JSON data from the request. 
+    // For Info: See Middleware section => app.use(express.json())
+
+    // The book referenced here is the book document we are POSTing. NOT a book we are GETing
+    const book = req.body
+    let bookAssignedId
+    let updatedReviewsObj = {reviews: []}
+    let assignedBook
+
+    // POSTs book
+    db.collection('books')
+        .insertOne(book)
+        .then(result => {
+            res.status(200).json(result)
+            
+            // In this scenario, the book was successfully added, but the review objects all have a bookId that doesn't actually point to the value assigned by MongoDB
+            // Perhaps this should be fixed by updating the review objects like so:
+
+        
+            // ====================================
+            // HERE BEGINS MY TOMFOOLERY
+            // ====================================
+            
+            
+            // bookAssignedId = res.insertedId
+            
+            // db.collection('books').findOne({ _id: bookAssignedId}).forEach(() => {
+            //     updatedReviewsObj.reviews.push({
+            //         bookId: bookAssignedId
+            //     })
+            // })
+            // .catch(err => {
+            //     res.status(500).json({err: "Could not create updated review object"})
+            // })
+
+
+            // ====================================
+            // HERE ENDS MY TOMFOOLERY
+            // ====================================
+
+        })
+        .catch(err => {
+            res.status(500).json({err: "Could not POST new document"})
+        })
+
+        
+        // ====================================
+        // HERE AGAIN BEGINS MY TOMFOOLERY
+        // ====================================
+
+        
+        // db.collection('books')
+        //     .updateOne({_id: bookAssignedId}, ({reviews: updatedReviewsObj}) => {
+        //         // update the review objects
+                
+
+        //         return updatedReviewsObj
+        //     })
+        //     .catch(err =>{
+        //         res.status.json({ error: "Failed to update book" })
+        //     })
+
+
+        // ====================================
+        // HERE AGAIN ENDS MY TOMFOOLERY
+        // ====================================
+})
+
+
+// ====================================
+// ============== DELETE ==============
+// ====================================
+
+
+
+
+
+
+
+
+// ====================================
+// ========== PATCH / UPDATE ==========
+// ====================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
