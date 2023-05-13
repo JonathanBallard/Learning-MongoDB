@@ -1,4 +1,5 @@
 
+
 const express = require('express');
 const { ObjectId } = require('mongodb');
 const { connectToDb, getDb } = require('./db')
@@ -34,10 +35,10 @@ connectToDb((err) => {
 
 
 
+
 // ====================================================================
 // ============================== ROUTES ==============================
 // ====================================================================
-
 
 // ===================================
 // =============== GET ===============
@@ -97,6 +98,7 @@ app.get('/books/:bookId', (req, res) => {
 })
 
 
+
 // ====================================
 // =============== POST ===============
 // ====================================
@@ -121,7 +123,7 @@ app.post('/books', (req, res) => {
             // In this scenario, the book was successfully added, but the review objects all have a bookId that doesn't actually point to the value assigned by MongoDB
             // Perhaps this should be fixed by updating the review objects like so:
 
-        
+
             // ====================================
             // HERE BEGINS MY TOMFOOLERY
             // ====================================
@@ -148,16 +150,16 @@ app.post('/books', (req, res) => {
             res.status(500).json({err: "Could not POST new document"})
         })
 
-        
+
         // ====================================
         // HERE AGAIN BEGINS MY TOMFOOLERY
         // ====================================
 
-        
+
         // db.collection('books')
         //     .updateOne({_id: bookAssignedId}, ({reviews: updatedReviewsObj}) => {
         //         // update the review objects
-                
+
 
         //         return updatedReviewsObj
         //     })
@@ -208,6 +210,33 @@ app.delete('/books/:id', (req, res) => {
 // ====================================
 // ========== PATCH / UPDATE ==========
 // ====================================
+
+
+app.patch('/books/:id', (req, res) => {
+    const updates = req.body
+
+    // updates will be an object which will consist of only the values we need to change
+    // don't need to include keys/values for unchanged properties
+
+    if( ObjectId.isValid(req.params.id)){
+        db.collection('books')
+        .updateOne({ _id: new ObjectId(req.params.id)}, {$set: updates})
+            .then(result => {
+                if(result !== null && result.matchedCount > 0){ //\ && result.modifiedCount > 0 (not functioning properly for updateOne)
+                    res.status(200).json(result)
+                }
+                else {
+                    res.status(500).json({ error: "There is no book with the ObjectId of: [ '" + req.params.id + "' ]"})
+                }
+            })
+            .catch(err => {
+                res.status(500).json({error: 'Could not update the document'})
+            })
+    }
+    else{
+        res.status(500).json({ error: "ObjectId of id: [ '" + req.params.id + "' ], is not valid"})
+    }
+})
 
 
 
